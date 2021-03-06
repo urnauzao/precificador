@@ -9,7 +9,7 @@ import '../styles/pages/calculadora.module.css';
 export default function Home() {
   return (
     <div className={styles.container}>
-      <Header title={"Create Next App"}/>
+      <Header title={"Precificador | Sistema para Cálculo da Previsão de Lucros por Venda em Marketplaces"}/>
       <Menu/>
 
       <main className={styles.main}>
