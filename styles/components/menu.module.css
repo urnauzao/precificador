@@ -1,0 +1,29 @@
+.menu{
+    padding:0.8rem;
+    margin:0px;
+    background-color:var(--soft-dark);
+    list-style:none;
+    font-size: 1.4rem;
+}
+
+.menu ul li a {
+    padding: 2px 10px;
+    display: inline-block;
+
+    /* visual do link */
+    background-color:var(--soft-dark);
+    color: var(--text-highlight);
+    text-decoration: none;
+    border-bottom:3px solid var(--soft-dark);
+}
+
+.menu ul li a:hover, .menuAtivo{
+    color: var(--white) !important;
+    border-bottom:3px solid var(--blue-twitter);
+}
+
+.menu ul li { display: inline; }
+
+.menuAtivo{
+    color: var(--blue-twitter) !important;
+}

@@ -1,0 +1,91 @@
+:root{
+  --white:#fff;
+  --background:#e4e3e6;
+  --gray-line: #dcdde0;
+  --text: #666;
+  --text-highlight: #b3b9ff;
+  --title: #2e384d;
+  --red:#EA0000;
+  --soft-red:#e83f5b;
+  --green:#4cd62b;
+  --blue:#5965e0;
+  --soft-blue:#7782fa;
+  --blue-dark:#4953b8;
+  --blue-twitter:#2aa9e0;
+  --soft-dark: #20262a
+}
+
+html{
+  font-size: 12px;
+}
+
+*{
+  margin:0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body{
+  font-family: 'Montserrat', sans-serif;
+  color: var(--text);
+  background: var(--background);
+}
+
+h1,h2,h3,h4,h5,h6,.u-font-title{
+  font-family: 'Noto Sans JP', sans-serif;
+  color: var(--title);
+}
+
+.container {
+  min-height: 80vh;
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.u-bg-white{
+  background: var(--white);
+}
+
+.u-bg-soft-dark{
+  background: var(--soft-dark);
+}
+
+.u-bg-twitter{
+  background: var(--blue-twitter);
+}
+
+.u-text-white{
+  color: var(--white);
+}
+
+.u-fw-900{
+  font-weight: 900 !important;
+}
+
+.u-fw-800{
+  font-weight: 800 !important;
+}
+
+.u-fw-700{
+  font-weight: 700 !important;
+}
+.u-fw-600{
+  font-weight: 600 !important;
+}
+.u-fw-500{
+  font-weight: 500 !important;
+}
+.u-fw-450{
+  font-weight: 450 !important;
+}
+.u-fw-300{
+  font-weight: 300 !important;
+}
+
+.u-font-title .p-dropdown-label, .u-font-title .p-dropdown-panel{
+  font-family: 'Noto Sans JP', sans-serif;
+  color: var(--title);
+}

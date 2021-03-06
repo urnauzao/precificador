@@ -1,0 +1,13 @@
+.containerCalculadora {
+    /* min-height: 80vh; */
+    padding: 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* align-items: center; */
+
+
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--white);
+}
