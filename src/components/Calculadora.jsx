@@ -504,7 +504,7 @@ export const Calculadora = () => {
             htmlPreviaoDeLucros = [htmlPreviaoDeLucros,   
             <div className={"p-col-12 p-md-6 p-lg-4 p-fluid contact-form "+showPrevisaoLucros} key={"resultado"+key}>
                 {/* <Panel header={"Oferta: Modo "+modos[key].tipo} key={"panel_"+key}> */}
-                    <h2 className="p-mb-3">Preço de Venda:</h2>
+                    <h2 className="p-mb-3">{modos[key].tipo}</h2>
                     <div className="p-col-12 p-py-0">
                         <div className="p-field" >
                             <span className="p-float-label">
