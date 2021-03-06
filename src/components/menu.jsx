@@ -1,4 +1,4 @@
-import Link from 'next/Link';
+// import Link from 'next/Link';
 import { useRouter } from 'next/router';
 import styles from '../../styles/components/menu.module.css';
 
@@ -17,12 +17,12 @@ export default function Menu(){
                 {
                 categories.map(items =>(
                     <li className={styles.layoutMenu} key={"routes_"+items.link}>
-                        <Link href={items.link}>
+                        {/* <a href={items.link}> */}
                             { items.link === router.pathname ?
-                                <a className={styles.menuAtivo} ><i className={items.icon+" p-mr-2"}></i> {items.label}</a> :
-                                <a className={styles.layoutLink}><i className={items.icon+" p-mr-2"}></i> {items.label}</a> 
+                                <a href={items.link} className={styles.menuAtivo} ><i className={items.icon+" p-mr-2"}></i> {items.label}</a> :
+                                <a href={items.link} className={styles.layoutLink}><i className={items.icon+" p-mr-2"}></i> {items.label}</a> 
                             }
-                        </Link>
+                        {/* </a> */}
                     </li>
                 ))
                 }
