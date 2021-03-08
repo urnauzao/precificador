@@ -6,6 +6,15 @@ export function CalculadoraProvider({children,...rest}){
     const [teste,setTeste] = useState(rest.teste ?? 'qualquer coisa')
     
     const opcoes_comissao = [
+        {taxa:'0', texto:"Sem Custos"},
+        {taxa:'1', texto:"1%"},
+        {taxa:'2', texto:"2%"},
+        {taxa:'3', texto:"3%"},
+        {taxa:'4', texto:"4%"},
+        {taxa:'5', texto:"5%"},
+        {taxa:'6', texto:"6%"},
+        {taxa:'7', texto:"7%"},
+        {taxa:'8', texto:"8%"},
         {taxa:'9', texto:"9%"},
         {taxa:'10', texto:"10%"},
         {taxa:'11', texto:"11%"},

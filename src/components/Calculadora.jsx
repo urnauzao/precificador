@@ -19,7 +19,11 @@ const valoresCamposCalculadora = {
     'despfixa':"",
     'despop':"",
     'despads':"",
-    'comissao':{},
+    'comissao':{
+        'ml_p':{id:'ml_p','tipo':'Premium', 'taxa':'16', 'precovenda':''}, 
+        'ml_c':{id:'ml_c','tipo':'Clássico', 'taxa':'11', 'precovenda':''},
+        'sh_d':{id:'sh_d','tipo':'Padrão', 'taxa': '5', 'precovenda': ''}
+    },
     'mlucro':"",
     'precovenda':"",
     'custofrete':""
@@ -93,6 +97,39 @@ const marketplacesOptions = [
             },
             imposto_sobre_envio: false,
         },
+    },
+    {
+        nome: 'Shopee',
+        sigla: 'sh',
+        moeda: 'BRL',
+        taxa_venda:{
+            custom: false,
+            modo_ofertas: {
+                sh_d:{id:'sh_d', tipo:'Padrão', taxa: '11'},
+            },  
+            opcoes: [
+                {taxa:'0', texto:"Sem custos"},
+                {taxa:'5', texto:"5%"},
+            ],
+            regras:[
+            ]
+        },
+        forma_envio:{
+            frete_gratis_obrigatorio: false,
+            permite_frete_gratis:true,
+            custo_frete_gratis: 0,
+            envio_gratis_personalizado: true,
+            custo_envio_personalizado: 0,
+            custo_regional_personalizado: false,
+            custo_regional:{
+                norte:0,
+                sudest:0,
+                nordeste:0,
+                noroeste:0,
+                sul:0
+            },
+            imposto_sobre_envio: false,
+        },
     }
     // ,{ nome: 'B2W', code: 'B2W', 'sale_fee': null, 'frete_gratis':true},
 ];
@@ -103,8 +140,8 @@ export const Calculadora = () => {
     const {opcoes_comissao, inputsCalculadora} = useContext(CalculadoraContext);
 
     /** @argument ('comentado apenas para trablabalhar com dados do mock') */
-    // const [valoresCalculadora, setValoresCalculadora] = useState(valoresCamposCalculadora);
-    const [valoresCalculadora, setValoresCalculadora] = useState({...valoresCamposCalculadora, ...mockValoresCamposCalculadora});
+    const [valoresCalculadora, setValoresCalculadora] = useState(valoresCamposCalculadora);
+    // const [valoresCalculadora, setValoresCalculadora] = useState({...valoresCamposCalculadora, ...mockValoresCamposCalculadora});
     
     
     const [showPrevisaoLucros, setShowPrevisaoLucros] = useState("fc-limited");
@@ -142,6 +179,8 @@ export const Calculadora = () => {
 
     const formatCurrency = (value) => {
         value = parseFloat(value);
+        if(isNaN(value))
+        value = 0;
         return value.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits: 2 , style: 'currency', currency: 'BRL', currencyDisplay: "symbol"});
     }
 
@@ -158,6 +197,13 @@ export const Calculadora = () => {
     }
 
     const calcular = (modo) => {
+        if(typeof valoresCalculadora.comissao[modo] === typeof undefined || typeof valoresCalculadora.comissao[modo].precovenda === typeof undefined){
+            return {
+                status: "---",
+                mensagens_alerta:"Selecione um valor de comissão para que o sistema realize a previsão de lucros!",
+                tabela:[]
+            }
+        }
         let precoVenda = stringToFloat(valoresCalculadora.comissao[modo].precovenda === null ? "0,0" : valoresCalculadora.comissao[modo].precovenda);
         let custoFixo = 0;
         let comissaoSobreFrete = false;
@@ -187,17 +233,19 @@ export const Calculadora = () => {
         let lucroVenda = precoVenda - (
             custoExposicao + custoEnvio + custoProduto + despesasFixas + despesasOperacionais + despesasTrafego + custoImposto
         );
-        let porcentagemSobreLucroVenda = (lucroVenda/precoVenda).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
-        let porcentagemSobreLucroProduto = (lucroVenda/custoProduto).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        let porcentagemSobreLucroVenda = 0;
+        if(!isNaN(lucroVenda/precoVenda)) porcentagemSobreLucroVenda = (lucroVenda/precoVenda).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        let porcentagemSobreLucroProduto = 0;
+        if(!isNaN(lucroVenda/custoProduto)) porcentagemSobreLucroProduto = (lucroVenda/custoProduto).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
 
         let tabela = [
             {nome:"Preço de Venda:", valor:formatCurrency(precoVenda)},
-            {nome:"Lucro Estimado", valor:formatCurrency(lucroVenda)},
+            {nome:"Lucro Estimado:", valor:formatCurrency(lucroVenda)},
             {nome:"Impostos:", valor:formatCurrency(custoImposto)},
-            {nome:"Taxa Marketplace", valor:formatCurrency(custoExposicao)},
-            {nome:"Lucro sobre Produto", valor:formatCurrency(lucroDesejadoProduto)},
+            {nome:"Taxa Marketplace:", valor:formatCurrency(custoExposicao)},
+            {nome:"Lucro sobre Produto:", valor:formatCurrency(lucroDesejadoProduto)},
             {nome:"Margem de Lucro sobre Produto:", valor:porcentagemSobreLucroProduto},
-            {nome:"Lucro sobre Venda", valor:formatCurrency(lucroDesejadoVenda)},
+            {nome:"Lucro sobre Venda:", valor:formatCurrency(lucroDesejadoVenda)},
             {nome:"Margem de Lucro sobre Venda:", valor:porcentagemSobreLucroVenda},
         ];
 
@@ -305,7 +353,7 @@ export const Calculadora = () => {
                             <div className="p-field" >
                                 <span className="p-float-label">
                                     <Dropdown id={"dropdown_"+modo.id} options={opcoes_comissao} value={valoresCalculadora[campo.key][mOf]['taxa']}
-                                    onChange={(e) => {preencherValoresComissao(modo.id, modo.tipo, e.value, valoresCalculadora[campo.key][mOf].precovenda) }} 
+                                    onChange={(e) => {preencherValoresComissao(modo.id, modo.tipo, e.value, valoresCalculadora[campo.key][mOf].precovenda)}} 
                                     optionLabel="texto" optionValue="taxa" className="p-text-center u-font-title p-pl-6"></Dropdown>
                                     <label className="u-fw-600" htmlFor={"dropdown_"+modo.id}>Taxa {modo.tipo}:</label>
                                 </span>
@@ -378,7 +426,11 @@ export const Calculadora = () => {
             </Divider>
         </div>
         for(const key in modos){
-            let resultado = calcular(key)
+            let resultado = calcular(key);
+            if(!resultado.tabela.length){
+                htmlPreviaoDeLucros = <h2>{resultado.mensagens_alerta}</h2>;
+                break;
+            }
             htmlPreviaoDeLucros = [htmlPreviaoDeLucros,   
             <div className={"p-col-12 p-md-6 p-lg-4 p-fluid contact-form "+showPrevisaoLucros} key={"resultado"+key}>
                 <h3 className="p-mb-3">Modo: {modos[key].tipo}</h3>
@@ -388,7 +440,7 @@ export const Calculadora = () => {
                             <CurrencyInput
                                 id={"inputComissao"+key}
                                 name={key}
-                                className={"p-text-center p-inputtext p-component"+(valoresCalculadora.comissao[key].precovenda === null ? "" : " p-filled")}
+                                className={"p-text-center u-font-title p-inputtext p-component"+(valoresCalculadora.comissao[key].precovenda === null ? "" : " p-filled")}
                                 placeholder={"Anúncio modo: "+modos[key].tipo}
                                 defaultValue={valoresCalculadora.comissao[key].precovenda}
                                 decimalsLimit={2}
@@ -397,7 +449,7 @@ export const Calculadora = () => {
                                 groupSeparator="."
                                 intlConfig={{ locale: 'pt-BR', currency: 'BRL' }}
                             />
-                            <label htmlFor={"inputComissao"+key}>Preço de Venda:</label>
+                            <label htmlFor={"inputComissao"+key} className="u-fw-600">Preço de Venda:</label>
                         </span>
                     </div>
                 </div>
