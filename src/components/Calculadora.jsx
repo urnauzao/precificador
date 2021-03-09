@@ -13,20 +13,20 @@ import GrupoDespesas from './Calculadora/grupoDespesas';
 
 const valoresCamposCalculadora = {
     'sku': "",
-    'qtd':"",
-    'custo':"",
-    'imposto':"",
-    'despfixa':"",
-    'despop':"",
-    'despads':"",
+    'qtd':"1",
+    'custo':"0",
+    'imposto':"0",
+    'despfixa':"0",
+    'despop':"0",
+    'despads':"0",
     'comissao':{
-        'ml_p':{id:'ml_p','tipo':'Premium', 'taxa':'16', 'precovenda':''}, 
-        'ml_c':{id:'ml_c','tipo':'Clássico', 'taxa':'11', 'precovenda':''},
-        'sh_d':{id:'sh_d','tipo':'Padrão', 'taxa': '5', 'precovenda': ''}
+        'ml_p':{id:'ml_p','tipo':'Premium', 'taxa':'16', 'precovenda':'0'}, 
+        'ml_c':{id:'ml_c','tipo':'Clássico', 'taxa':'11', 'precovenda':'0'},
+        'sh_d':{id:'sh_d','tipo':'Padrão', 'taxa': '5', 'precovenda': '0'}
     },
-    'mlucro':"",
-    'precovenda':"",
-    'custofrete':""
+    // 'mlucro':"10",
+    // 'precovenda':"0",
+    'custofrete':"0"
 }
 
 const mockValoresCamposCalculadora = {
@@ -197,7 +197,7 @@ export const Calculadora = () => {
     }
 
     const calcular = (modo) => {
-        if(typeof valoresCalculadora.comissao[modo] === typeof undefined || typeof valoresCalculadora.comissao[modo].precovenda === typeof undefined){
+        if(typeof valoresCalculadora.comissao[modo] === typeof undefined || typeof valoresCalculadora.comissao[modo].precovenda === ""){
             return {
                 status: "---",
                 mensagens_alerta:"Selecione um valor de comissão para que o sistema realize a previsão de lucros!",
@@ -211,41 +211,58 @@ export const Calculadora = () => {
         if(typeof marketplaceSelecionado.taxa_venda.regras === typeof [] && marketplaceSelecionado.taxa_venda.regras.length){
             for(const regra of marketplaceSelecionado.taxa_venda.regras){
                 if(regra.ofertas_enquadradas.includes(modo) && precoVenda >= regra.custo_minimo && precoVenda < regra.custo_maximo){
-                    custoFixo = regra.custo_fixo;
+                    custoFixo = regra.custo_fixo === "" ? 0 : regra.custo_fixo;
                     if(!mensagensAlerta.includes(regra.mensagem))
                         mensagensAlerta.push(regra.mensagem);
                 }
             }
         }
-
+        
         let taxaExposicao = valoresCalculadora.comissao[modo].taxa;
+        if(taxaExposicao === "") taxaExposicao = 0;
         let custoExposicao = (precoVenda * (taxaExposicao/100))+custoFixo;
-        let taxaImposto = valoresCalculadora.imposto;        
+        let taxaImposto = valoresCalculadora.imposto === "" ? 0 : valoresCalculadora.imposto;        
         let custoImposto = precoVenda * (taxaImposto/100);
-        let custoEnvio = stringToFloat(valoresCalculadora.custofrete);
-        let custoProduto = stringToFloat(valoresCalculadora.custo);
-        let despesasFixas = stringToFloat(valoresCalculadora.despfixa);
-        let despesasOperacionais = stringToFloat(valoresCalculadora.despop);
-        let despesasTrafego = stringToFloat(valoresCalculadora.despads);
-        let margemLucro = valoresCalculadora.mlucro/100;
-        let lucroDesejadoVenda = precoVenda*margemLucro;
-        let lucroDesejadoProduto = custoProduto*margemLucro;
+        let custoEnvio = stringToFloat((valoresCalculadora.custofrete === "" || typeof valoresCalculadora.custofrete === typeof undefined ? "0" : valoresCalculadora.custofrete));
+        let custoProduto = stringToFloat((valoresCalculadora.custo === "" || typeof valoresCalculadora.custo === typeof undefined ? "0" : valoresCalculadora.custo));
+        if(custoProduto === 0){
+            mensagensAlerta.push("Recomendamos que insira uma valor de custo de produto para fazer sentido ao calculo de lucros");
+        }
+        let qtd = stringToFloat((valoresCalculadora.qtd === "" || typeof valoresCalculadora.qtd === typeof undefined ? "0" : valoresCalculadora.qtd));
+        let custoTotalProduto = custoProduto*qtd;
+        let despesasFixas = stringToFloat((valoresCalculadora.despfixa === "" || typeof valoresCalculadora.despfixa === typeof undefined ? "0" : valoresCalculadora.despfixa));
+        let despesasOperacionais = stringToFloat((valoresCalculadora.despop === "" || typeof valoresCalculadora.despop === typeof undefined ? "0" : valoresCalculadora.despop));
+        let despesasTrafego = stringToFloat((valoresCalculadora.despads === "" || typeof valoresCalculadora.despads === typeof undefined ? "0" : valoresCalculadora.despads));
+        // let margemLucro = (valoresCalculadora.mlucro === "" ? 0 : valoresCalculadora.mlucro);
+        // margemLucro = margemLucro/100;
+        // let lucroDesejadoVenda = precoVenda*margemLucro;
+        // let lucroDesejadoProduto = custoProduto*margemLucro;
         let lucroVenda = precoVenda - (
-            custoExposicao + custoEnvio + custoProduto + despesasFixas + despesasOperacionais + despesasTrafego + custoImposto
+            custoExposicao + custoEnvio + custoTotalProduto + despesasFixas + despesasOperacionais + despesasTrafego + custoImposto
         );
         let porcentagemSobreLucroVenda = 0;
-        if(!isNaN(lucroVenda/precoVenda)) porcentagemSobreLucroVenda = (lucroVenda/precoVenda).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        if(precoVenda !== 0){
+            if(!isNaN(lucroVenda/precoVenda)) porcentagemSobreLucroVenda = (lucroVenda/precoVenda).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        }else{
+            porcentagemSobreLucroVenda = "0".toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        }
         let porcentagemSobreLucroProduto = 0;
-        if(!isNaN(lucroVenda/custoProduto)) porcentagemSobreLucroProduto = (lucroVenda/custoProduto).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        if(custoProduto !== 0){
+            if(!isNaN(lucroVenda/custoProduto)) porcentagemSobreLucroProduto = (lucroVenda/custoProduto).toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        }else{
+            porcentagemSobreLucroProduto = "0".toLocaleString("pt-BR",{style:"percent", currency:"BRL"});
+        }
+        
 
         let tabela = [
             {nome:"Preço de Venda:", valor:formatCurrency(precoVenda)},
             {nome:"Lucro Estimado:", valor:formatCurrency(lucroVenda)},
             {nome:"Impostos:", valor:formatCurrency(custoImposto)},
+            {nome:"Custo Total do Produto:", valor:formatCurrency(custoTotalProduto)},
             {nome:"Taxa Marketplace:", valor:formatCurrency(custoExposicao)},
-            {nome:"Lucro sobre Produto:", valor:formatCurrency(lucroDesejadoProduto)},
+            // {nome:"Lucro sobre Produto:", valor:formatCurrency(lucroDesejadoProduto)},
             {nome:"Margem de Lucro sobre Produto:", valor:porcentagemSobreLucroProduto},
-            {nome:"Lucro sobre Venda:", valor:formatCurrency(lucroDesejadoVenda)},
+            // {nome:"Lucro sobre Venda:", valor:formatCurrency(lucroDesejadoVenda)},
             {nome:"Margem de Lucro sobre Venda:", valor:porcentagemSobreLucroVenda},
         ];
 
@@ -272,7 +289,7 @@ export const Calculadora = () => {
                         <div className="p-field">
                             <span className="p-float-label">
                                 <InputText className="p-text-center u-font-title" type="text" id={"input"+campo.key} defaultValue={valoresCalculadora[campo.key]} 
-                                    onChange={(e) => preencherValoresCalculadora(campo.key, e.target.value)} />
+                                    onChange={(e) => {if(campo.min && e.target.value < campo.min){e.target.value = campo.min} preencherValoresCalculadora(campo.key, e.target.value)}}/>
                                 <label className="u-fw-600" htmlFor={"input"+campo.key}>{campo.texto}</label>
                             </span>
                         </div>
@@ -297,7 +314,7 @@ export const Calculadora = () => {
                                 id={"input"+campo.key}
                                 name={campo.key}
                                 className={"p-text-center p-inputtext u-font-title p-component"+(valoresCalculadora[campo.key] ? " p-filled" : "")}
-                                placeholder={campo.texto}
+                                // placeholder={campo.texto}
                                 defaultValue={valoresCalculadora[campo.key]}
                                 decimalsLimit={2}
                                 onValueChange={(value, name) => {console.log(value, name);preencherValoresCalculadora(name, value)}}
@@ -441,7 +458,7 @@ export const Calculadora = () => {
                                 id={"inputComissao"+key}
                                 name={key}
                                 className={"p-text-center u-font-title p-inputtext p-component"+(valoresCalculadora.comissao[key].precovenda === null ? "" : " p-filled")}
-                                placeholder={"Anúncio modo: "+modos[key].tipo}
+                                // placeholder={"Anúncio modo: "+modos[key].tipo}
                                 defaultValue={valoresCalculadora.comissao[key].precovenda}
                                 decimalsLimit={2}
                                 onValueChange={(value, name) => preencherValoresComissao(name, modos[key].tipo, modos[key].taxa, value)}
@@ -461,8 +478,8 @@ export const Calculadora = () => {
                 </div>
                     {resultado.mensagens_alerta.length ? <h5 className="p-mt-5">Aviso(s):</h5> : <></>}
                     {resultado.mensagens_alerta.length ? resultado.mensagens_alerta.map( 
-                        (msg) => {
-                            return (<p className="" key="avisos">{msg}</p>)
+                        (msg,index) => {
+                            return (<p className="" key={"avisos::"+index}>{msg}</p>)
                         }
                     ):<></>
                     }
